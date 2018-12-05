@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/btn_play_audio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="play"
+
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/btn_stop_audio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="stop"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/btn_pause_audio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="pause"
+        tools:ignore="MissingConstraints" />
+</LinearLayout>
