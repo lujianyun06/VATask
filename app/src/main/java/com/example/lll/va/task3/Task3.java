@@ -41,9 +41,9 @@ public class Task3 implements View.OnClickListener,
     private Activity mActivity;
     private boolean isSurfaceMode;  //切换surfaceview和textureview的演示
 
-    static String videoFileName = Environment.getExternalStorageDirectory() + "/test_vedio.mp4";
+    public static String videoFileName = Environment.getExternalStorageDirectory() + "/test_video.3gp";
 
-    public static void runTask3(Activity activity) {
+    public static void main(Activity activity) {
         task3 = new Task3(activity);
         task3.initView();
 
@@ -146,7 +146,7 @@ public class Task3 implements View.OnClickListener,
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         // 设置录制完成后视频的封装格式THREE_GPP为3gp.MPEG_4为mp4
         mediaRecorder
-                .setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+                .setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         // 设置录制的视频编码h264
         //音频编码为AAC
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
