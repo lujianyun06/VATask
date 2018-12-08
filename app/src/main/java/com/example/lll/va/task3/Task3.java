@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.media.AudioFormat;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -145,8 +146,7 @@ public class Task3 implements View.OnClickListener,
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         // 设置录制完成后视频的封装格式THREE_GPP为3gp.MPEG_4为mp4
-        mediaRecorder
-                .setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         // 设置录制的视频编码h264
         //音频编码为AAC
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
@@ -154,6 +154,10 @@ public class Task3 implements View.OnClickListener,
         mediaRecorder.setOrientationHint(90);
         // 设置视频录制的分辨率。必须放在设置编码和格式的后面，否则报错
         mediaRecorder.setVideoSize(1600, 1200);
+        mediaRecorder.setAudioSamplingRate(44100);
+        mediaRecorder.setAudioChannels(1);
+
+        mediaRecorder.setAudioEncodingBitRate(96000);
         mediaRecorder.setVideoEncodingBitRate(1024 * 1024 * 5);// 设置编码位率,图像模糊的设置了这个图像就清晰了
 
         // 设置录制的视频帧率。必须放在设置编码和格式的后面，否则报错
