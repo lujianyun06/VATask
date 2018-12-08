@@ -102,85 +102,8 @@ public class EncodeManager {
         initEncodeOutputFile();
         mECodec.setCallback(mEncodeCallback);
         mECodec.configure(outFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-
         mECodec.start();
 
-    }
-
-    //每一帧前面都要加上ADTS头，可以看做是每一个AAC帧的帧头
-    private void addADTStoPacket(byte[] packet, int packetLen) {
-        int profile = 2;  //AAC LC
-        //39=MediaCodecInfo.CodecProfileLevel.AACObjectELD;
-        int freqIdx = 4;  //44.1KHz
-        int chanCfg = 2;  //CPE
-
-//        byte[] packet1 = new byte[packetLen];
-        // fill in ADTS data
-        packet[0] = (byte) 0xFF;
-        packet[1] = (byte) 0xF9;
-        packet[2] = (byte) (((profile - 1) << 6) + (freqIdx << 2) + (chanCfg >> 2));
-        packet[3] = (byte) (((chanCfg & 3) << 6) + (packetLen >> 11));
-        packet[4] = (byte) ((packetLen & 0x7FF) >> 3);
-        packet[5] = (byte) (((packetLen & 7) << 5) + 0x1F);
-        packet[6] = (byte) 0xFC;
-//
-//
-//        //把这些清晰的放出来，但最好还是用上面的方式
-//        //syncword
-//        packet[0] = (byte) 0xFF;
-//        packet[1] |= 0xF << 4;
-//        //id
-//        packet[1] |= 0x1 << 3;
-//        //layer
-//        packet[1] |= 0x00 << 1;
-//        //protection_abscent
-//        packet[1] |= 0x1;
-//        //profile
-//        packet[2] |= (profile -1) << 6;
-//        //sampling_frequency_index
-//        packet[2] |= freqIdx << 2;
-//        //private bit
-//        packet[2] |= 0x0 << 1;
-//        //channel_config
-//        packet[2] |= chanCfg >> 2;  //高1位
-//        packet[3] |= chanCfg << 6;   //低2位
-//        //copy and home;
-//        packet[3] |= 0x00 << 4;
-//        //cib and cis
-//        packet[3] |= 0x00 << 2;
-//        //frame_length,单位是字节。不用管int是几个字节，把它当13位就行了,一帧的长度一般不可能超过13位能表达的最大值(8KB),
-//        packet[3] |= packetLen >> 11;
-//        packet[4] = (byte) (packetLen >> 3);
-//        int x = packetLen << 5;
-//        packet[5] |= packetLen << 5;
-//
-//        packet[5] |= 0x7FF >> 6;
-//        packet[6] |= 0x7FF << 2;
-//
-//        for (int i = 0; i < 7; i++) {
-//            Log.d(tag, "packet " + i + "=" + packet[i]);
-//        }
-    }
-
-
-    private void stopAndrealseCodec() {
-        if (mECodec != null) {
-            mECodec.release();
-            mECodec = null;
-            mExtractor.release();
-            mExtractor = null;
-            Log.d(tag, "outputBuffer BUFFER_FLAG_END_OF_STREAM");
-            try {
-                fos.flush();
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            Log.d(tag, "stopAndrealseCodec");
-            Log.d(tag, "inputSize=" + inputSize);
-            Log.d(tag, "outputSize=" + outputSize);
-        }
     }
 
 
@@ -260,6 +183,7 @@ public class EncodeManager {
             codec.releaseOutputBuffer(outIndex, false);
             if (info.flags == MediaCodec.BUFFER_FLAG_END_OF_STREAM) {
                 Log.d(tag, "BUFFER_FLAG_END_OF_STREAM");
+                stopAndrealseCodec();
             }
         }
 
@@ -273,5 +197,81 @@ public class EncodeManager {
 
         }
     };
+
+    //每一帧前面都要加上ADTS头，可以看做是每一个AAC帧的帧头
+    private void addADTStoPacket(byte[] packet, int packetLen) {
+        int profile = 2;  //AAC LC
+        //39=MediaCodecInfo.CodecProfileLevel.AACObjectELD;
+        int freqIdx = 4;  //44.1KHz
+        int chanCfg = 2;  //CPE
+
+//        byte[] packet1 = new byte[packetLen];
+        // fill in ADTS data
+        packet[0] = (byte) 0xFF;
+        packet[1] = (byte) 0xF9;
+        packet[2] = (byte) (((profile - 1) << 6) + (freqIdx << 2) + (chanCfg >> 2));
+        packet[3] = (byte) (((chanCfg & 3) << 6) + (packetLen >> 11));
+        packet[4] = (byte) ((packetLen & 0x7FF) >> 3);
+        packet[5] = (byte) (((packetLen & 7) << 5) + 0x1F);
+        packet[6] = (byte) 0xFC;
+//
+//
+//        //把这些清晰的放出来，但最好还是用上面的方式
+//        //syncword
+//        packet[0] = (byte) 0xFF;
+//        packet[1] |= 0xF << 4;
+//        //id
+//        packet[1] |= 0x1 << 3;
+//        //layer
+//        packet[1] |= 0x00 << 1;
+//        //protection_abscent
+//        packet[1] |= 0x1;
+//        //profile
+//        packet[2] |= (profile -1) << 6;
+//        //sampling_frequency_index
+//        packet[2] |= freqIdx << 2;
+//        //private bit
+//        packet[2] |= 0x0 << 1;
+//        //channel_config
+//        packet[2] |= chanCfg >> 2;  //高1位
+//        packet[3] |= chanCfg << 6;   //低2位
+//        //copy and home;
+//        packet[3] |= 0x00 << 4;
+//        //cib and cis
+//        packet[3] |= 0x00 << 2;
+//        //frame_length,单位是字节。不用管int是几个字节，把它当13位就行了,一帧的长度一般不可能超过13位能表达的最大值(8KB),
+//        packet[3] |= packetLen >> 11;
+//        packet[4] = (byte) (packetLen >> 3);
+//        int x = packetLen << 5;
+//        packet[5] |= packetLen << 5;
+//
+//        packet[5] |= 0x7FF >> 6;
+//        packet[6] |= 0x7FF << 2;
+//
+//        for (int i = 0; i < 7; i++) {
+//            Log.d(tag, "packet " + i + "=" + packet[i]);
+//        }
+    }
+
+
+    private void stopAndrealseCodec() {
+        if (mECodec != null) {
+            mECodec.release();
+            mECodec = null;
+            mExtractor.release();
+            mExtractor = null;
+            Log.d(tag, "outputBuffer BUFFER_FLAG_END_OF_STREAM");
+            try {
+                fos.flush();
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Log.d(tag, "stopAndrealseCodec");
+            Log.d(tag, "inputSize=" + inputSize);
+            Log.d(tag, "outputSize=" + outputSize);
+        }
+    }
 
 }

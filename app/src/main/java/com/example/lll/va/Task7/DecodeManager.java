@@ -158,7 +158,6 @@ public class DecodeManager {
 
             Log.d(tag, "\ninputBuffer.limit = " + inputBuffer.limit() + " index=" + index);
             MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
-//            while (true){
             int size = mExtractor.readSampleData(inputBuffer, 0);
             int flag = mExtractor.getSampleFlags();
             long presentation = mExtractor.getSampleTime();
@@ -169,7 +168,6 @@ public class DecodeManager {
                 codec.queueInputBuffer(index, offset, size, presentation, flag);
                 mExtractor.advance();
             } else { //当文件达到末尾时，用flag
-//                return;
                 size = 0;
                 presentation = 0;
                 flag = MediaCodec.BUFFER_FLAG_END_OF_STREAM;
