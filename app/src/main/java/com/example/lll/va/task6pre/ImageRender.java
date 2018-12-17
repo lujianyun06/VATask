@@ -8,6 +8,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -44,8 +45,6 @@ public class ImageRender implements GLSurfaceView.Renderer {
         GLES20.glLinkProgram(_pointProgram); //链接着色器单元
         triangle2 = new Triangle2();
         GLES20.glUseProgram(_pointProgram);
-
-
     }
 
     float vpM[] = new float[16];
@@ -89,9 +88,9 @@ public class ImageRender implements GLSurfaceView.Renderer {
         GLES20.glUniformMatrix4fv(matLoc, 1, false, vpM, 0);
 
 
-//        Log.d(TAG,"color=" + color);
-//        Log.d(TAG,"pos=" + pos);
-//        Log.d(TAG,"mat=" + matLoc);
+        Log.d(TAG,"color=" + color);
+        Log.d(TAG,"pos=" + pos);
+        Log.d(TAG,"mat=" + matLoc);
         Log.d(TAG, "pos=" + pos);
         triangle2.draw(pos, color);
     }
@@ -103,14 +102,17 @@ public class ImageRender implements GLSurfaceView.Renderer {
         return shader;  //编译后返回
     }
 
+    //从asset中获取shader，在正儿八经的glsl文件里编辑，好处显而易见
     private String getShaderString(String name) {
         StringBuffer stringBuffer = new StringBuffer();
         String tmp = "";
         try {
             InputStream is = activity.getAssets().open(name);
             byte temp[] = new byte[10];
-            while (-1 != is.read(temp)) {
-                tmp = new String(temp);
+            int len = 0;
+            while ((len = is.read(temp)) > 0) {
+                //read不会清洗上一次读过得的数据，如果这次只读了3个，只会覆盖上一次的前三个字节，后7个还会存留，所以用本次读了的个数来限定
+                tmp = new String(temp, 0, len, Charset.defaultCharset());
                 stringBuffer.append(tmp);
             }
             is.close();
@@ -118,6 +120,7 @@ public class ImageRender implements GLSurfaceView.Renderer {
             e.printStackTrace();
         }
         Log.d(TAG, stringBuffer.toString());
+        Log.d(TAG, "\n****************end shader");
         return stringBuffer.toString();
     }
 
