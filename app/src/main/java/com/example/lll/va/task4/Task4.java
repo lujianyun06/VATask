@@ -28,7 +28,6 @@ public class Task4 {
     private Activity mActivity;
     private int videoTrackIndex = 0;
     private int audioTrackIndex = 0;
-    private int audioTrackIndex2 = 0;
 
     public static void main(Activity activity) {
         Task4 task4 = new Task4(activity);
