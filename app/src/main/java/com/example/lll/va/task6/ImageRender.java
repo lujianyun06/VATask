@@ -1,4 +1,4 @@
-package com.example.lll.va.task6pre;
+package com.example.lll.va.task6;
 
 import android.app.Activity;
 import android.opengl.GLES20;
@@ -12,7 +12,6 @@ import java.nio.charset.Charset;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-import javax.xml.transform.Source;
 
 public class ImageRender implements GLSurfaceView.Renderer {
     private static final String TAG = ImageRender.class.getName();
@@ -20,16 +19,22 @@ public class ImageRender implements GLSurfaceView.Renderer {
     private int textureId;
     private Triangle2 triangle2;
     int _pointProgram;
+    Image image;
 
     public ImageRender(Activity activity) {
         this.activity = activity;
-        VERTEX_SHADER = getShaderString("gl_Position.glsl");
-        FRAGMENT_SHADER = getShaderString("gl_color.glsl");
+
+        boolean isUseFileShader = true;
+
+        if (isUseFileShader) {
+            VERTEX_SHADER = getShaderString("gl_Position.glsl");
+            FRAGMENT_SHADER = getShaderString("gl_color.glsl");
+        }
 
 
     }
 
-    int pos;
+    int vertexPos;
 
     @Override
     public void onSurfaceCreated(GL10 unusedgl, EGLConfig config) {
@@ -43,8 +48,11 @@ public class ImageRender implements GLSurfaceView.Renderer {
         GLES20.glAttachShader(_pointProgram, vShader);
         GLES20.glAttachShader(_pointProgram, fShader);
         GLES20.glLinkProgram(_pointProgram); //链接着色器单元
-        triangle2 = new Triangle2();
+//        triangle2 = new Triangle2();
         GLES20.glUseProgram(_pointProgram);
+
+        image = new Image(activity, _pointProgram);
+
     }
 
     float vpM[] = new float[16];
@@ -68,12 +76,12 @@ public class ImageRender implements GLSurfaceView.Renderer {
         float size = (float) (zNear * Math.tan(fov / 2));
 
 
-        Matrix.setLookAtM(vM, 0, 0, 0, 5, 0, 0, -100, 0, 1, 0);
-        Matrix.frustumM(pM, 0, -size, size, -size / ratio, size / ratio, zNear, zFar);
-        Matrix.setIdentityM(mM, 0);
-//        Matrix.multiplyMM(vpM, 0, mM, 0, mM, 0);
+        Matrix.setLookAtM(vM, 0, 0, 0, 0, 0, 0, -10, 0, 1, 0);
+        Matrix.frustumM(pM, 0, -ratio, ratio, -1, 1, zNear, zFar);
+//        Matrix.setIdentityM(mM, 0);
+//        Matrix.multiplyMM(vpM, 0, vM, 0, mM, 0);
         Matrix.multiplyMM(vpM, 0, pM, 0, vM, 0);
-        Log.d(TAG, "mat=" + vpM);
+//        Log.d(TAG, "mat=" + vpM);
 
 
     }
@@ -82,17 +90,16 @@ public class ImageRender implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 //        Log.d(TAG, "_program=" + _pointProgram);
-        pos = GLES20.glGetAttribLocation(_pointProgram, "vPosition");
-        int color = GLES20.glGetAttribLocation(_pointProgram, "aColor");
-        int matLoc = GLES20.glGetUniformLocation(_pointProgram, "mvp");
-        GLES20.glUniformMatrix4fv(matLoc, 1, false, vpM, 0);
+        vertexPos = GLES20.glGetAttribLocation(_pointProgram, "av_Position");
+        int texture = GLES20.glGetAttribLocation(_pointProgram, "af_Position");
+        int mat = GLES20.glGetUniformLocation(_pointProgram, "mat");
+        GLES20.glUniformMatrix4fv(mat, 1, false, vpM, 0);
+        Log.d(TAG, "vertexPos=" + texture);
 
 
-        Log.d(TAG,"color=" + color);
-        Log.d(TAG,"pos=" + pos);
-        Log.d(TAG,"mat=" + matLoc);
-        Log.d(TAG, "pos=" + pos);
-        triangle2.draw(pos, color);
+        image.draw(vertexPos, texture);
+
+//        triangle2.draw(pos, color);
     }
 
     private int loadShader(int type, String source) {
@@ -126,29 +133,29 @@ public class ImageRender implements GLSurfaceView.Renderer {
 
     //
     private static String VERTEX_SHADER = "" +
-            "attribute vec3 vPosition;\n" +
-            "attribute vec4 aColor;\n" +
-            "varying vec4 vColor;\n" +
-            "uniform mat4 mvp;\n" +
-            "void main()\n" +
-            "{\n" +
-            "    vec4 pp = vec4(vPosition, 1.0);\n" +
-            "    vColor = aColor;\n" +
-            "    gl_Position = mvp * pp ;\n" +
-            "}"
-
-            + "";
+            "attribute vec4 av_Position;//顶点位置\n" +
+            "attribute vec2 af_Position;//纹理位置\n" +
+            "attribute vec4 a_color;\n" +
+            "varying vec2 v_texPo;//纹理位置  与fragment_shader交互\n" +
+            "varying vec4 f_color;\n" +
+            "uniform mat4 mat;\n" +
+            "void main() {\n" +
+            "    v_texPo = af_Position;\n" +
+            "    f_color = a_color;\n" +
+            "    gl_Position = mat * av_Position;\n" +
+            "}\n";
 
     private static String FRAGMENT_SHADER =
-            "#ifdef GL_FRAGMENT_PRECISION_HIGH\n" +
-                    "precision highp float;\n" +
-                    "#else\n" +
-                    "precision mediump float;\n" +
-                    "#endif\n" +
-                    "varying vec4 vColor;\n" +
+            "precision mediump float;//精度 为float\n" +
+                    "varying vec2 v_texPo;//纹理位置  接收于vertex_shader\n" +
+                    "varying vec4 f_color;\n" +
+                    "\n" +
+                    "uniform sampler2D sTexture;//纹理\n" +
                     "\n" +
                     "void main() {\n" +
-                    "    gl_FragColor = vColor;\n" +
-                    "" +
-                    "}";
+                    "    vec4 tex2D;\n" +
+                    "    tex2D =texture2D(sTexture, v_texPo);\n" +
+                    "//    vec4 ff = vec4(0.5,0.0,0.0,0.0);\n" +
+                    "    gl_FragColor = tex2D + f_color;\n" +
+                    "}\n";
 }

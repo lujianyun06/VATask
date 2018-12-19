@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 
 public class BufferUtil {
 
@@ -35,6 +36,15 @@ public class BufferUtil {
         ByteBuffer byteBuffer = ByteBuffer.allocateDirect(datas.length * 4);
         byteBuffer.order(ByteOrder.nativeOrder());
         IntBuffer buffer = byteBuffer.asIntBuffer();
+        buffer.put(datas);
+        buffer.position(0);
+        return buffer;
+    }
+
+    public ShortBuffer initShortBuffer(short[] datas) {
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(datas.length * 4);
+        byteBuffer.order(ByteOrder.nativeOrder());
+        ShortBuffer buffer = byteBuffer.asShortBuffer();
         buffer.put(datas);
         buffer.position(0);
         return buffer;

@@ -3,7 +3,7 @@ package com.example.lll.va;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.example.lll.va.task6pre.Task6pre;
+import com.example.lll.va.task6.Task6;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
 //        Task7.main(this);
 //        Task5min.main(this);
 //        Task5.main(this);
-        Task6pre.main(this);
+        Task6.main(this);
     }
 
 //

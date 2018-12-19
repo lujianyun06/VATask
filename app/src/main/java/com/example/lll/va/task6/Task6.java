@@ -1,16 +1,16 @@
-package com.example.lll.va.task6pre;
+package com.example.lll.va.task6;
 
 import android.app.Activity;
 import android.opengl.GLSurfaceView;
 
-public class Task6pre {
+public class Task6 {
     public Activity mActivity;
 
     public static void main(Activity activity){
-        Task6pre task5 = new Task6pre(activity);
+        Task6 task5 = new Task6(activity);
     }
 
-    public Task6pre(Activity activity){
+    public Task6(Activity activity){
         this.mActivity = activity;
         initView();
     }
